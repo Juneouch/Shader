@@ -1,0 +1,90 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class MaterialController : MonoBehaviour
+{
+    public GameObject character;
+    private Material mat;
+    #region [starrt/update]
+    void Start()
+    {
+        mat = character.GetComponentInChildren<SkinnedMeshRenderer>().sharedMaterial;
+        mat.SetColor("_Color", Color.black);
+        mat.DisableKeyword("_DISSOLVEENABLE_ON");
+        //mat.SetFloat("_Clip",0);
+
+    }
+
+    void Update()
+    {
+
+
+    }
+    #endregion
+
+    void OnGUI()
+    {
+        //Create a button in the rect area,
+        if (GUI.Button(new Rect(25, 25, 100, 30), "Hit"))
+        {
+            StopAllCoroutines();
+            StartCoroutine(Behit());
+        }
+        if (GUI.Button(new Rect(25, 60, 100, 30), "Addicted"))
+        {
+            StopAllCoroutines();
+            StartCoroutine(BeAddict(2f));
+        }
+        if (GUI.Button(new Rect(25, 95, 100, 30), "Dead"))
+        {
+            StopAllCoroutines();
+            StartCoroutine(Dead(3f));
+        }
+    }
+    IEnumerator Behit()
+    {
+        mat.SetColor("_Color", Color.white);
+        yield return new WaitForSeconds(0.1f);
+        mat.SetColor("_Color", Color.black);
+    }
+    IEnumerator BeAddict(float duration)
+    {
+        float _time = 0;
+        Color _color = new Color(0, 0, 0, 1);
+        //通过一下语句实现每一帧循环执行
+        while (_time < duration)
+        {
+            _time += Time.deltaTime;
+            //yeild 挂起，暂停的条件是 return 后面的语句
+            yield return new WaitForEndOfFrame();
+            _color = Color.Lerp(Color.red, Color.black, _time / duration);
+            mat.SetColor("_Color", _color);
+            Debug.Log(_time);
+        }
+        yield return null;
+    }
+    IEnumerator Dead(float duration)
+    {
+        float _time = 0;
+        Color _color = new Color(0, 0, 0, 1);
+        //通过一下语句实现每一帧循环执行
+        while (_time < duration)
+        {
+            _time += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+            if (_time>duration)
+            {
+                mat.DisableKeyword("_DISSOLVEENABLE_ON");
+                mat.SetFloat("_Clip",0);
+                yield break;
+            }
+            else
+            {
+                //开启宏关键字
+                mat.EnableKeyword("_DISSOLVEENABLED_ON");
+                mat.SetFloat("_Clip", _time / duration);
+            }
+        }
+    }
+}
